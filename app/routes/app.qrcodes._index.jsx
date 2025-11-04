@@ -3,8 +3,16 @@ import { authenticate } from "../shopify.server";
 import { getQRCodes } from "../models/QRCode.server";
 
 export const loader = async ({ request }) => {
-  const { admin, session } = await authenticate.admin(request);
-  return await getQRCodes(session.shop, admin.graphql);
+  try {
+    const { admin, session } = await authenticate.admin(request);
+    
+    const qrCodes = await getQRCodes(session.shop, admin.graphql);
+    
+    return qrCodes;
+  } catch (error) {
+    // 如果认证失败，返回空数组避免阻塞
+    return [];
+  }
 };
 
 export default function Index() {

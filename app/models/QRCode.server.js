@@ -9,7 +9,7 @@ export async function getQRCode(id, graphql) {
     return null;
   }
 
-  return supplementQRCode(qrCode, graphql);
+  return await supplementQRCode(qrCode, graphql);
 }
 
 

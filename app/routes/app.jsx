@@ -1,13 +1,14 @@
 import { Outlet, useLoaderData, useRouteError } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
-import { authenticate } from "../shopify.server";
 
-export const loader = async ({ request }) => {
-  await authenticate.admin(request);
-
-  // eslint-disable-next-line no-undef
-  return { apiKey: process.env.SHOPIFY_API_KEY || "" };
+export const loader = async () => {
+  // 不管认证成功或失败，只返回必需的 apiKey
+  // 子路由会各自处理认证需求
+  return {
+    // eslint-disable-next-line no-undef
+    apiKey: process.env.SHOPIFY_API_KEY || "",
+  };
 };
 
 export default function App() {

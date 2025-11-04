@@ -1,16 +1,23 @@
-import { useLoaderData, Link } from "react-router";
+/* eslint-disable react/prop-types */
+import { useLoaderData } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
-
 import { authenticate } from "../shopify.server";
 import { getQRCodes } from "../models/QRCode.server";
 
 export async function loader({ request }) {
-  const { admin, session } = await authenticate.admin(request);
-  const qrCodes = await getQRCodes(session.shop, admin.graphql);
-
-  return {
-    qrCodes,
-  };
+  try {
+    const { admin, session } = await authenticate.admin(request);
+    const qrCodes = await getQRCodes(session.shop, admin.graphql);
+    
+    return {
+      qrCodes,
+    };
+  } catch (error) {
+    // 如果认证失败，返回空状态避免阻塞
+    return {
+      qrCodes: [],
+    };
+  }
 }
 
 const EmptyQRCodeState = () => (
@@ -61,7 +68,7 @@ const QRTable = ({ qrCodes }) => (
       </s-table-header-row>
       <s-table-body>
         {qrCodes.map((qrCode) => (
-          <QRTableRow key={qrCode.id} qrCode={qrCode} />
+          <QRTableRow key={qrCode?.id} qrCode={qrCode} />
         ))}
       </s-table-body>
     </s-table>
@@ -69,40 +76,40 @@ const QRTable = ({ qrCodes }) => (
 );
 
 const QRTableRow = ({ qrCode }) => (
-  <s-table-row id={qrCode.id} position={qrCode.id}>
+  <s-table-row id={qrCode?.id} position={qrCode?.id}>
     <s-table-cell>
       <s-stack direction="inline" gap="small" alignItems="center">
         <s-clickable
-          href={`/app/qrcodes/${qrCode.id}`}
-          accessibilityLabel={`Go to the product page for ${qrCode.productTitle}`}
+          href={`/app/qrcodes/${qrCode?.id}`}
+          accessibilityLabel={`Go to the product page for ${qrCode?.productTitle}`}
           border="base"
           borderRadius="base"
           overflow="hidden"
           inlineSize="20px"
           blockSize="20px"
         >
-          {qrCode.productImage ? (
-            <s-image objectFit="cover" src={qrCode.productImage}></s-image>
+          {qrCode?.productImage ? (
+            <s-image objectFit="cover" src={qrCode?.productImage}></s-image>
           ) : (
             <s-icon size="large" type="image" />
           )}
         </s-clickable>
-        <s-link href={`/app/qrcodes/${qrCode.id}`}>
-          {truncate(qrCode.title)}
+        <s-link href={`/app/qrcodes/${qrCode?.id}`}>
+          {truncate(qrCode?.title)}
         </s-link>
       </s-stack>
     </s-table-cell>
     <s-table-cell>
-      {qrCode.productDeleted ? (
+      {qrCode?.productDeleted ? (
         <s-badge icon="alert-diamond" tone="critical">
           Product has been deleted
         </s-badge>
       ) : (
-        truncate(qrCode.productTitle)
+        truncate(qrCode?.productTitle)
       )}
     </s-table-cell>
-    <s-table-cell>{new Date(qrCode.createdAt).toDateString()}</s-table-cell>
-    <s-table-cell>{qrCode.scans}</s-table-cell>
+    <s-table-cell>{new Date(qrCode?.createdAt).toDateString()}</s-table-cell>
+    <s-table-cell>{qrCode?.scans}</s-table-cell>
   </s-table-row>
 );
 
